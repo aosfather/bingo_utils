@@ -1,7 +1,8 @@
-package bingo_utils
+package log
 
 import (
 	"fmt"
+	"github.com/aosfather/bingo_utils/contain"
 	"log"
 	"runtime"
 	"time"
@@ -30,7 +31,7 @@ type LogFactory struct {
 	loglevel int
 	logfile  *RollingFile
 	l        *log.Logger
-	queue    *Queue
+	queue    *contain.Queue
 	running  bool
 }
 
@@ -44,7 +45,7 @@ func (this *LogFactory) SetConfig(config LogConfig) {
 	this.logfile = &r
 	this.l = log.New(this.logfile, "", log.LstdFlags)
 
-	this.queue = NewQueue()
+	this.queue = contain.NewQueue()
 	this.running = true
 	go this.outThread()
 
@@ -52,7 +53,7 @@ func (this *LogFactory) SetConfig(config LogConfig) {
 
 func (this *LogFactory) outThread() {
 	for {
-		if v, ok := this.queue.pop().(*logRecord); ok {
+		if v, ok := this.queue.Pop().(*logRecord); ok {
 			this.l.Printf(v.format, v.objs...)
 		} else {
 			time.Sleep(time.Millisecond)
@@ -77,7 +78,7 @@ func (this *LogFactory) Close() {
 func (this *LogFactory) Write(level int, prefix string, fmt string, obj ...interface{}) {
 	if level >= this.loglevel { //判断loglevel是否大于指定的level，如果大于则输出，否则直接抛弃
 		content := this.formatHeader(prefix, level) + fmt + "\n"
-		this.queue.push(&logRecord{content, obj})
+		this.queue.Push(&logRecord{content, obj})
 
 	}
 }

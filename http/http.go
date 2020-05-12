@@ -1,4 +1,4 @@
-package bingo_utils
+package http
 
 import (
 	"crypto/tls"
@@ -120,7 +120,7 @@ func Post(theUrl string, data interface{}, result interface{}) error {
 		return err
 	}
 
-	fmt.Println(string(body))
+	//fmt.Println(string(body))
 
 	json.Unmarshal(body, result)
 	return nil

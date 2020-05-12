@@ -1,6 +1,8 @@
-package bingo_utils
+package reflect
 
 import (
+	"github.com/aosfather/bingo_utils"
+	"github.com/aosfather/bingo_utils/strings"
 	"net/url"
 	"reflect"
 	"time"
@@ -52,7 +54,7 @@ func GetStructTypeValue(obj interface{}) (reflect.Type, reflect.Value, error) {
 		objT = objT.Elem()
 		objV = objV.Elem()
 	default:
-		return objT, objV, CreateError(500, "Must set a struct or a struct pointer!")
+		return objT, objV, bingo_utils.CreateError(500, "Must set a struct or a struct pointer!")
 
 	}
 	return objT, objV, nil
@@ -117,7 +119,7 @@ func getFormFieldName(field reflect.StructField) string {
 func GetColName(field reflect.StructField) string {
 	colName := field.Tag.Get(_TAG_FIELD)
 	if colName == "" {
-		colName = BingoString(field.Name).SnakeString()
+		colName = strings.BingoString(field.Name).SnakeString()
 	}
 
 	return colName
@@ -158,7 +160,7 @@ func setString(ind reflect.Value, value interface{}) {
 	if value == nil {
 		ind.SetString("")
 	} else {
-		ind.SetString(ToStr(value))
+		ind.SetString(strings.ToStr(value))
 	}
 }
 
@@ -168,7 +170,7 @@ func setBool(ind reflect.Value, value interface{}) {
 	} else if v, ok := value.(bool); ok {
 		ind.SetBool(v)
 	} else {
-		v, _ := BingoString(ToStr(value)).Bool()
+		v, _ := strings.BingoString(strings.ToStr(value)).Bool()
 		ind.SetBool(v)
 	}
 }
@@ -184,7 +186,7 @@ func setInt(ind reflect.Value, value interface{}) {
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			ind.SetInt(int64(val.Uint()))
 		default:
-			v, _ := BingoString(ToStr(value)).Int64()
+			v, _ := strings.BingoString(strings.ToStr(value)).Int64()
 			ind.SetInt(v)
 		}
 	}
@@ -201,7 +203,7 @@ func setUint(ind reflect.Value, value interface{}) {
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			ind.SetUint(val.Uint())
 		default:
-			v, _ := BingoString(ToStr(value)).Uint64()
+			v, _ := strings.BingoString(strings.ToStr(value)).Uint64()
 			ind.SetUint(v)
 		}
 	}
@@ -216,7 +218,7 @@ func setFloat(ind reflect.Value, value interface{}) {
 		case reflect.Float64:
 			ind.SetFloat(val.Float())
 		default:
-			v, _ := BingoString(ToStr(value)).Float64()
+			v, _ := strings.BingoString(strings.ToStr(value)).Float64()
 			ind.SetFloat(v)
 		}
 	}

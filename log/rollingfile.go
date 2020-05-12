@@ -1,9 +1,10 @@
-package bingo_utils
+package log
 
 import (
 	"compress/gzip"
 	"errors"
 	"fmt"
+	"github.com/aosfather/bingo_utils/files"
 	"io"
 	"io/ioutil"
 	"os"
@@ -203,7 +204,7 @@ func (l *RollingFile) openNew() error {
 		}
 
 		// this is a no-op anywhere but linux
-		if err := chown(name, info); err != nil {
+		if err := files.Chown(name, info); err != nil {
 			return err
 		}
 	}
@@ -456,7 +457,7 @@ func compressLogFile(src, dst string) (err error) {
 		return fmt.Errorf("failed to stat log file: %v", err)
 	}
 
-	if err := chown(dst, fi); err != nil {
+	if err := files.Chown(dst, fi); err != nil {
 		return fmt.Errorf("failed to chown compressed log file: %v", err)
 	}
 

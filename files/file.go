@@ -1,4 +1,4 @@
-package bingo_utils
+package files
 
 import (
 	"os"
@@ -13,7 +13,7 @@ func IsFileExist(file string) bool {
 
 var os_Chown = os.Chown
 
-func chown(name string, info os.FileInfo) error {
+func Chown(name string, info os.FileInfo) error {
 	f, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, info.Mode())
 	if err != nil {
 		return err

@@ -1,4 +1,4 @@
-package bingo_utils
+package strings
 
 import (
 	"fmt"

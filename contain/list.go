@@ -1,4 +1,4 @@
-package bingo_utils
+package contain
 
 import (
 	"container/list"
@@ -20,13 +20,13 @@ func NewQueue() *Queue {
 	return q
 }
 
-func (q *Queue) push(v interface{}) {
+func (q *Queue) Push(v interface{}) {
 	q.lock.Lock()
 	q.data.PushFront(v)
 	q.lock.Unlock()
 }
 
-func (q *Queue) pop() interface{} {
+func (q *Queue) Pop() interface{} {
 	q.lock.Lock()
 	iter := q.data.Back()
 	if iter != nil {

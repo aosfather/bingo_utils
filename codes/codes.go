@@ -1,4 +1,4 @@
-package bingo_utils
+package codes
 
 import "strings"
 
