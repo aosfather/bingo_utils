@@ -46,7 +46,7 @@ func (this *InjectMan) GetObject(t reflect.Type) Object {
 
 func (this *InjectMan) AssignObject(o Object) {
 	if o != nil && IsStructPtr(o) {
-		t := reflect2.GetRealType(o)
+		t := GetRealType(o)
 		o = this.GetObject(t)
 	}
 }
@@ -130,7 +130,6 @@ func (this *InjectMan) getReflectValue(t reflect.Type, sname string) reflect.Val
 		}
 
 		//其它类型，轮询所有的service
-
 		v := this.GetObject(t)
 		if v == nil {
 			if this.handler != nil {
