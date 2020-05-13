@@ -73,16 +73,14 @@ func (this *LuaPool) Get() *lua.LState {
 	this.m.Lock()
 	defer this.m.Unlock()
 	if this.size < this.max {
-		defer func() {
-			this.size++
-		}()
-
 		n := len(this.saved)
 		if n == 0 {
+			this.size++
 			return this.new()
 		}
 		x := this.saved[n-1]
 		this.saved = this.saved[0 : n-1]
+		this.size++
 		return x
 	}
 	return nil
@@ -96,10 +94,15 @@ func (this *LuaPool) new() *lua.LState {
 }
 
 //归还
-func (this *LuaPool) Put(L *lua.LState) {
+func (this *LuaPool) Put(L *lua.LState) int {
+	if L == nil {
+		return this.size
+	}
 	this.m.Lock()
 	defer this.m.Unlock()
 	this.saved = append(this.saved, L)
+	this.size--
+	return this.size
 }
 
 func (this *LuaPool) Shutdown() {
