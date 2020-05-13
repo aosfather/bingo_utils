@@ -1,0 +1,149 @@
+package lua
+
+import (
+	"bufio"
+	"fmt"
+	lua "github.com/yuin/gopher-lua"
+	"github.com/yuin/gopher-lua/parse"
+	"io"
+	"os"
+	"strings"
+	"sync"
+)
+
+func CompileByfile(filename string) (*lua.FunctionProto, error) {
+	file, err := os.Open(filename)
+	defer file.Close()
+	if err != nil {
+		return nil, err
+	}
+	reader := bufio.NewReader(file)
+	return compile(filename, reader)
+}
+
+func CompileByString(name string, content string) (*lua.FunctionProto, error) {
+	return compile(name, strings.NewReader(content))
+}
+
+func compile(name string, reader io.Reader) (*lua.FunctionProto, error) {
+	chunk, err := parse.Parse(reader, name)
+	if err != nil {
+		return nil, err
+	}
+	proto, err := lua.Compile(chunk, name)
+	if err != nil {
+		return nil, err
+	}
+	return proto, nil
+}
+
+//构建池
+func NewLuaPool(max int, lib map[string]lua.LGFunction) *LuaPool {
+	pool := LuaPool{}
+	pool.Init(max, lib)
+	return &pool
+}
+
+//lua虚拟机池
+type LuaPool struct {
+	max     int
+	size    int
+	m       sync.Mutex
+	saved   []*lua.LState
+	exports map[string]lua.LGFunction
+}
+
+func (this *LuaPool) Init(max int, lib map[string]lua.LGFunction) {
+	this.max = max
+	this.saved = make([]*lua.LState, 0, max/2)
+	this.exports = lib
+	for _, l := range this.saved {
+		l.PreloadModule("bingo", this.load)
+	}
+}
+func (this *LuaPool) load(L *lua.LState) int {
+	mod := L.SetFuncs(L.NewTable(), this.exports)
+	L.SetField(mod, "name", lua.LString("bingo"))
+	//设为只读，防止被串改
+	L.Push(SetReadOnly(L, mod))
+	return 1
+}
+
+func (this *LuaPool) Get() *lua.LState {
+	this.m.Lock()
+	defer this.m.Unlock()
+	if this.size < this.max {
+		defer func() {
+			this.size++
+		}()
+
+		n := len(this.saved)
+		if n == 0 {
+			return this.new()
+		}
+		x := this.saved[n-1]
+		this.saved = this.saved[0 : n-1]
+		return x
+	}
+	return nil
+
+}
+
+func (this *LuaPool) new() *lua.LState {
+	L := lua.NewState()
+	L.PreloadModule("bingo", this.load)
+	return L
+}
+
+//归还
+func (this *LuaPool) Put(L *lua.LState) {
+	this.m.Lock()
+	defer this.m.Unlock()
+	this.saved = append(this.saved, L)
+}
+
+func (this *LuaPool) Shutdown() {
+	for _, L := range this.saved {
+		L.Close()
+	}
+}
+
+// 设置表为只读
+func SetReadOnly(l *lua.LState, table *lua.LTable) *lua.LUserData {
+	ud := l.NewUserData()
+	mt := l.NewTable()
+	// 设置表中域的指向为 table
+	l.SetField(mt, "__index", table)
+	// 限制对表的更新操作
+	l.SetField(mt, "__newindex", l.NewFunction(func(state *lua.LState) int {
+		state.RaiseError("not allow to modify table")
+		return 0
+	}))
+	ud.Metatable = mt
+	return ud
+}
+
+//检查是否使用了全局变量
+//涉及到全局变量的指令有两条：GETGLOBAL（Opcode 5）和 SETGLOBAL（Opcode 7）
+func CheckGlobal(proto *lua.FunctionProto) error {
+	for _, code := range proto.Code {
+		switch opGetOpCode(code) {
+		case lua.OP_GETGLOBAL:
+			return fmt.Errorf("not allow to access global")
+		case lua.OP_SETGLOBAL:
+			return fmt.Errorf("not allow to set global")
+		}
+	}
+	// 对嵌套函数进行全局变量的检查
+	for _, nestedProto := range proto.FunctionPrototypes {
+		if err := CheckGlobal(nestedProto); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// 获取对应指令的 OpCode
+func opGetOpCode(inst uint32) int {
+	return int(inst >> 26)
+}
