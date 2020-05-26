@@ -68,8 +68,11 @@ func (this *InjectMan) AddObjectByName(name string, o Object) {
 	}
 }
 
-func (this *InjectMan) Inject() {
+func (this *InjectMan) Inject(beforeInject func(interface{})) {
 	for _, v := range this.services {
+		if beforeInject != nil {
+			beforeInject(v)
+		}
 		this.doInject(v)
 	}
 
