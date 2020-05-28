@@ -76,7 +76,12 @@ func (this *RedisSessionStore) GetValue(id, key string) interface{} {
 }
 func (this *RedisSessionStore) SetValue(id, key string, value interface{}) {
 	if id != "" && key != "" {
-		this.client.HSet(id, key, value.(string))
+		if value != nil {
+			this.client.HSet(id, key, value.(string))
+		} else {
+			this.client.HDel(id, key)
+		}
+
 	}
 }
 func (this *RedisSessionStore) Touch(id string) {
