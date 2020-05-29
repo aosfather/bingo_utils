@@ -13,16 +13,37 @@ const _TAG_INJECT = "Inject" //依赖
 
 type Object interface{}
 
+//工厂
+type Factory interface {
+	CanAssignableTo(t reflect.Type) bool
+	Factory(config string) interface{}
+}
+
 //服务找不到时候的处理，如果也无法处理返回nil
-type OnServiceNotFoundHandler func(tag string, typeName string) Object
+type OnServiceNotFoundHandler func(tag string, t reflect.Type) Object
 type InjectMan struct {
 	handler        OnServiceNotFoundHandler
 	services       []Object
+	factorys       []Factory //工厂
 	serviceMapping map[string]Object
 }
 
+func (this *InjectMan) factory(tag string, t reflect.Type) Object {
+	for _, f := range this.factorys {
+		if f.CanAssignableTo(t) {
+			return f.Factory(tag)
+		}
+	}
+	return nil
+}
+
 func (this *InjectMan) Init(h OnServiceNotFoundHandler) {
-	this.handler = h
+	if h != nil {
+		this.handler = h
+	} else {
+		this.handler = this.factory
+	}
+
 	this.serviceMapping = make(map[string]Object)
 }
 
@@ -40,7 +61,6 @@ func (this *InjectMan) GetObject(t reflect.Type) Object {
 			return v
 		}
 	}
-
 	return nil
 }
 
@@ -53,15 +73,25 @@ func (this *InjectMan) AssignObject(o Object) {
 
 func (this *InjectMan) AddObject(o Object) {
 	if o != nil && IsStructPtr(o) {
-		this.services = append(this.services, o)
+		this.addObjects(o)
 	} else {
 		panic("only surpport struct ptr")
 	}
 }
 
+func (this *InjectMan) addObjects(o ...Object) {
+	for _, obj := range o {
+		this.services = append(this.services, obj)
+		if f, ok := obj.(Factory); ok {
+			this.factorys = append(this.factorys, f)
+		}
+	}
+
+}
+
 func (this *InjectMan) AddObjectByName(name string, o Object) {
 	if o != nil && IsStructPtr(o) && name != "" {
-		this.services = append(this.services, o)
+		this.addObjects(o)
 		this.serviceMapping[name] = o
 	} else {
 		panic("only surpport struct ptr")
@@ -124,7 +154,7 @@ func (this *InjectMan) getReflectValue(t reflect.Type, sname string) reflect.Val
 	if sname != "" {
 		v := this.serviceMapping[sname]
 		if v == nil && this.handler != nil {
-			v = this.handler(sname, t.Name())
+			v = this.handler(sname, t)
 		}
 		return reflect.ValueOf(v)
 	} else {
@@ -136,7 +166,7 @@ func (this *InjectMan) getReflectValue(t reflect.Type, sname string) reflect.Val
 		v := this.GetObject(t)
 		if v == nil {
 			if this.handler != nil {
-				v := this.handler(sname, t.Name())
+				v := this.handler(sname, t)
 				return reflect.ValueOf(v)
 			}
 		}
