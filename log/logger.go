@@ -95,6 +95,26 @@ func (this *LogFactory) formatHeader(prefix string, level int) string {
 	return fmt.Sprintf("[%s][%s][%s(%d)]- ", LEVEL_NAMES[level-1], prefix, short, line)
 }
 
+func DefaultLog() Log {
+	return &defaultLog{}
+}
+
+type defaultLog struct {
+}
+
+func (this *defaultLog) Info(msg string, obj ...interface{}) {
+	fmt.Printf(msg, obj...)
+}
+func (this *defaultLog) Debug(msg string, obj ...interface{}) {
+	fmt.Printf(msg, obj...)
+}
+func (this *defaultLog) Error(msg string, obj ...interface{}) {
+	fmt.Printf(msg, obj...)
+}
+func (this *defaultLog) Warning(msg string, obj ...interface{}) {
+	fmt.Printf(msg, obj...)
+}
+
 type Log interface {
 	Info(msg string, obj ...interface{})
 	Debug(msg string, obj ...interface{})
