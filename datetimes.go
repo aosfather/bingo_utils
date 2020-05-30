@@ -18,6 +18,13 @@ func Now() string {
 	return time.Now().Format(FORMAT_DATETIME)
 }
 
+func GetCurrentTimestampStr() string {
+	return strconv.Itoa(int(GetCurrentTimestamp()))
+}
+
+func GetCurrentTimestamp() int64 {
+	return time.Now().UnixNano() / 1e6
+}
 func SinceMinutes(fromtime string) int {
 	fromTime, err := time.ParseInLocation(FORMAT_DATETIME, fromtime, time.Local)
 	if err != nil {
