@@ -55,7 +55,7 @@ const (
 )
 
 type OrderDetailResponse struct {
-	didiBaseResponse
+	DidiBaseResponse
 	Data OrderDetails
 }
 type OrderDetails struct {

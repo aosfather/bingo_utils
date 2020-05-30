@@ -22,7 +22,7 @@ const (
 //------------获取订单号---------------//
 
 type orderResponse struct {
-	didiBaseResponse
+	DidiBaseResponse
 	Data orderId `json:"data"`
 }
 
@@ -48,8 +48,8 @@ type OrderRequest struct {
 	Lineup     int    `json:"enable_lineup"`   //是否允许排队：0,为不允许；1,为允许。默认为0
 	Reassign   int    `json:"enable_reassign"` //是否允许改派：0,为不允许；1,为允许。默认为0
 	/*
-		enable_lineup中，订单是否会排队，由滴滴的大数据排队策略控制。该字段选择允许排队，则代表在该订单满足大数据排队策略时，自动进入队列进行排队；如不满足排队策略，即便该字段选择允许排队，订单也不会进入队列
-	当enable_lineup为1（允许排队）时，enable_reassign必须传1（允许改派），否则会报错
+			enable_lineup中，订单是否会排队，由滴滴的大数据排队策略控制。该字段选择允许排队，则代表在该订单满足大数据排队策略时，自动进入队列进行排队；如不满足排队策略，即便该字段选择允许排队，订单也不会进入队列
+		当enable_lineup为1（允许排队）时，enable_reassign必须传1（允许改派），否则会报错
 	*/
 }
 
@@ -82,7 +82,7 @@ func (this *OrderRequest) toMap() map[string]string {
 }
 
 type OrderResponse struct {
-	didiBaseResponse
+	DidiBaseResponse
 	Data OrderRequstResult
 }
 
@@ -157,7 +157,7 @@ func (this *OrderCancelRequest) toMap() map[string]string {
 }
 
 type OrderCancelResponse struct {
-	didiBaseResponse
+	DidiBaseResponse
 	Data OrderCancelCost
 }
 type OrderCancelCost struct {
@@ -202,7 +202,7 @@ func (this *orderSimpleRequest) toMap() map[string]string {
 func (this *DiDiConfig) FeeConfirm(id string) {
 	request := orderSimpleRequest{}
 	request.Order = id
-	response := didiBaseResponse{}
+	response := DidiBaseResponse{}
 	this.callApi(_FEE_CONFIRM, &request.didiBaseRequest, &request, &response)
 	if response.Code == ERR_SUCCESS {
 

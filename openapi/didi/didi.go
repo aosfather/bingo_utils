@@ -68,6 +68,10 @@ type DiDiConfig struct {
 }
 
 func (this *DiDiConfig) Init() {
+	if this.log == nil {
+		this.log = log.DefaultLog()
+	}
+
 	this.getAccessToken()
 }
 

@@ -21,7 +21,7 @@ type DidiCity struct {
 	Kuaiche  int    `json:"open_kuaiche"`  //是否开通快车 1-开通 0-未开通
 }
 type didiCityResponse struct {
-	didiBaseResponse
+	DidiBaseResponse
 	Data []DidiCity
 }
 
@@ -50,7 +50,7 @@ func (this *didiAddressRequest) toMap() map[string]string {
 }
 
 type didiAddressResponse struct {
-	didiBaseResponse
+	DidiBaseResponse
 	Data didiAddressData `json:"data"`
 }
 
@@ -98,7 +98,7 @@ func (this *FeatureRequest) toMap() map[string]string {
 }
 
 type FeatureResponse struct {
-	didiBaseResponse
+	DidiBaseResponse
 	Data Feature
 }
 
@@ -167,7 +167,7 @@ type DidiCarPrice struct {
 }
 
 type DidiPriceResponse struct {
-	didiBaseResponse
+	DidiBaseResponse
 	Data  map[string]DidiCarPrice `json:"data"`
 	level string
 }
@@ -196,7 +196,7 @@ type priceRuleRequest struct {
 }
 
 type priceRuleResponse struct {
-	didiBaseResponse
+	DidiBaseResponse
 	Data map[string]*priceRuleInfo `json:"data"`
 }
 

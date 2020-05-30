@@ -35,7 +35,7 @@ func (this *DiDiConfig) Comment(id string, level string, comment string) error {
 	r.Order = id
 	r.Level = level
 	r.Comment = comment
-	response := didiBaseResponse{}
+	response := DidiBaseResponse{}
 	this.callApi(_COMMENT_DRIVER, &r.didiBaseRequest, &r, &response)
 	if response.Code != ERR_SUCCESS {
 		this.log.Error(response.Message)
@@ -53,7 +53,7 @@ type complaintOption struct {
 }
 
 type OptionResponse struct {
-	didiBaseResponse
+	DidiBaseResponse
 	Data []complaintOption
 }
 
@@ -91,7 +91,7 @@ func (this *DiDiConfig) Complaint(id string, option string, content string) erro
 	r.Order = id
 	r.Type = option
 	r.Content = content
-	response := didiBaseResponse{}
+	response := DidiBaseResponse{}
 	this.callApi(_COMPLAINT_SUBMIT, &r.didiBaseRequest, &r, &response)
 	if response.Code != ERR_SUCCESS {
 		this.log.Error(response.Message)
