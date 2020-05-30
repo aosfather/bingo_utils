@@ -149,3 +149,15 @@ func PostByForm(theUrl string, params map[string]string, result interface{}) err
 	json.Unmarshal(body, result)
 	return nil
 }
+
+func HTTPGetStruct(result interface{}, furl string, a ...interface{}) error {
+	url := fmt.Sprintf(furl, a...)
+	data, err := HTTPGet(url)
+	if err == nil {
+		fmt.Println(string(data))
+		err = json.Unmarshal(data, result)
+		fmt.Println(err)
+
+	}
+	return err
+}
