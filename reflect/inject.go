@@ -57,7 +57,7 @@ func (this *InjectMan) GetObjectByName(name string) Object {
 
 func (this *InjectMan) GetObject(t reflect.Type) Object {
 	for _, v := range this.services {
-		if t.AssignableTo(reflect.TypeOf(v)) {
+		if reflect.TypeOf(v).AssignableTo(t) {
 			return v
 		}
 	}
