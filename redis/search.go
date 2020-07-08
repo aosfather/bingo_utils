@@ -27,9 +27,9 @@ type Field struct {
 }
 
 type PageSearchResult struct {
-	Id    string `json:"uuid"` //查询的请求id
-	Index int64  `json:"page"` //页码
-	Data  []TargetObject
+	Id    string         `json:"uuid"` //查询的请求id
+	Index int64          `json:"page"` //页码
+	Data  []TargetObject `json:"result"`
 }
 
 type TargetObject struct {
@@ -98,6 +98,7 @@ func (this *SearchEngine) Init(option SearchOption) {
 	})
 	this.indexs = make(map[string]*searchIndex)
 	this.safeIndexs = make(map[string]*searchIndex)
+	this.logger = utils.DefaultLog()
 }
 
 //创建索引

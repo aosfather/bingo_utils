@@ -12,6 +12,29 @@ const (
 	_TAG_FIELD = "Field"
 )
 
+//将结构指针类型转换成map
+func ToMap(obj interface{}) map[string]interface{} {
+	if IsMap(obj) {
+		return obj.(map[string]interface{})
+	}
+	//处理struct 及指针类型
+	objT, objV, err := GetStructTypeValue(obj)
+	if err != nil {
+		return nil
+	}
+
+	target := make(map[string]interface{})
+	for i := 0; i < objT.NumField(); i++ {
+		f := objT.Field(i)
+		vf := objV.Field(i)
+
+		colName := getFormFieldName(f)
+		target[colName] = vf.Interface()
+
+	}
+	return target
+
+}
 func IsMap(obj interface{}) bool {
 	objT := reflect.TypeOf(obj)
 	if objT.Kind() == reflect.Map {
