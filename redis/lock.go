@@ -25,11 +25,11 @@ end`
 )
 
 type RedisLockFactory struct {
-	client *redis.Client
+	client redis.Cmdable
 	expire int64
 }
 
-func (this *RedisLockFactory) Init(c *redis.Client, e int64) {
+func (this *RedisLockFactory) Init(c *redis.Cmdable, e int64) {
 	this.client = c
 	this.expire = e
 }
@@ -47,7 +47,7 @@ func (this *RedisLockFactory) getKey() string {
 }
 
 type RedisLock struct {
-	client   *redis.Client
+	client   redis.Cmdable
 	resource string //资源
 	key      string //密钥
 	expire   time.Duration

@@ -7,6 +7,7 @@ package redis
 import (
 	"encoding/json"
 	"github.com/aosfather/bingo_utils/reflect"
+	"strings"
 
 	"github.com/go-redis/redis"
 	"time"
@@ -38,7 +39,7 @@ type RedisCache struct {
 	addr   string //地址
 	db     int    //数据库
 	pwd    string //密码
-	client *redis.Client
+	client redis.Cmdable
 }
 
 func (this *RedisCache) Init(addr string, pwd string, db int) {
@@ -54,12 +55,18 @@ func (this *RedisCache) Init(addr string, pwd string, db int) {
 	}
 	this.pwd = pwd
 
-	this.client = redis.NewClient(&redis.Options{
-		Addr:     this.addr,
-		Password: this.pwd, // no password set
-		DB:       this.db,  // use default DB
-	})
-
+	if strings.Index(this.addr, _SPLIT_) > 0 {
+		this.client = redis.NewClusterClient(&redis.ClusterOptions{
+			Addrs:    strings.Split(this.addr, _SPLIT_),
+			Password: pwd,
+		})
+	} else {
+		this.client = redis.NewClient(&redis.Options{
+			Addr:     this.addr,
+			Password: this.pwd, // no password set
+			DB:       this.db,  // use default DB
+		})
+	}
 }
 
 //获取缓存对象，如果存在返回true
