@@ -29,7 +29,7 @@ type RedisLockFactory struct {
 	expire int64
 }
 
-func (this *RedisLockFactory) Init(c *redis.Cmdable, e int64) {
+func (this *RedisLockFactory) Init(c redis.Cmdable, e int64) {
 	this.client = c
 	this.expire = e
 }
