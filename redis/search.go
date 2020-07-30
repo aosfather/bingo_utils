@@ -61,6 +61,8 @@ type FieldMeta struct {
 	Name string    //字段名称
 	Type FieldType //类型
 }
+
+const _SPLIT_ = "," //多个地址的分隔符
 type SearchOption struct {
 	PageSize  int64
 	PageLife  int64
@@ -71,7 +73,7 @@ type SearchOption struct {
 type SearchEngine struct {
 	indexs     map[string]*searchIndex
 	safeIndexs map[string]*searchIndex //安全flush时候的临时索引
-	client     *redis.Client
+	client     redis.Cmdable
 	logger     utils.Log `Inject:""`
 	pageSize   int64
 	pageLife   int64 //分钟
@@ -91,11 +93,19 @@ func (this *SearchEngine) Init(option SearchOption) {
 		this.pageLife = 10 //默认时间10分钟
 	}
 
-	this.client = redis.NewClient(&redis.Options{
-		Addr:     option.RedisAddr,
-		Password: option.RedisPwd, // no password set
-		DB:       option.RedisDB,
-	})
+	if strings.Index(option.RedisAddr, _SPLIT_) > 0 {
+		this.client = redis.NewClusterClient(&redis.ClusterOptions{
+			Addrs:    strings.Split(option.RedisAddr, _SPLIT_),
+			Password: option.RedisPwd,
+		})
+	} else {
+		this.client = redis.NewClient(&redis.Options{
+			Addr:     option.RedisAddr,
+			Password: option.RedisPwd, // no password set
+			DB:       option.RedisDB,
+		})
+	}
+
 	this.indexs = make(map[string]*searchIndex)
 	this.safeIndexs = make(map[string]*searchIndex)
 	this.logger = utils.DefaultLog()

@@ -7,10 +7,23 @@ import (
 
 //分布式session存储实现
 type RedisSessionStore struct {
-	client *redis.Client
+	client redis.Cmdable
 	expire int64 //超期时间
+
 }
 
+func (this *RedisSessionStore) InitByCluster(addr []string, pwd string, expire int64) {
+	//防止多次初始化
+	if this.client != nil {
+		return
+	}
+
+	if expire > 0 {
+		this.expire = expire
+	}
+
+	this.client = redis.NewClusterClient(&redis.ClusterOptions{Addrs: addr, Password: pwd})
+}
 func (this *RedisSessionStore) Init(addr string, db int, pwd string, expire int64) {
 	//防止多次初始化
 	if this.client != nil {
