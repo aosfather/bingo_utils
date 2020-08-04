@@ -1,6 +1,9 @@
 package bingo_utils
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type Object interface{}
 
@@ -58,4 +61,48 @@ func CreateError(c int, text string) MethodError {
 	err.code = c
 	err.msg = text
 	return err
+}
+
+//日志输出函数
+type LogFunc func(msg ...interface{})
+
+var _debug LogFunc
+var _err LogFunc
+var _info LogFunc
+
+func SetLogInfoFunc(f LogFunc) {
+	_info = f
+}
+
+func SetLogErrFunc(f LogFunc) {
+	_err = f
+}
+
+func SetLogDebugFunc(f LogFunc) {
+	_debug = f
+}
+
+func Debug(msg ...interface{}) {
+	if _debug != nil {
+		_debug(msg...)
+	}
+}
+
+func Debugf(format string, msg ...interface{}) {
+	if _debug != nil {
+		fmsg := fmt.Sprintf(format, msg...)
+		_debug(fmsg)
+	}
+}
+
+func Err(msg ...interface{}) {
+	if _err != nil {
+		_err(msg...)
+	}
+}
+
+func Info(msg ...interface{}) {
+	if _info != nil {
+		_info(msg...)
+	}
 }
