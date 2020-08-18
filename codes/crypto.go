@@ -63,7 +63,13 @@ func (this *ThreeDES) SetKey(s string) error {
 	return nil
 }
 
-func (this *ThreeDES) Encrypt(src []byte) (string, error) {
+func (this *ThreeDES) EncryptForce(str string) string {
+	target, _ := this.Encrypt(str)
+	return target
+}
+
+func (this *ThreeDES) Encrypt(str string) (string, error) {
+	src := []byte(str)
 	src = padding(src, this.block.BlockSize())
 	blockmode := cipher.NewCBCEncrypter(this.block, this.key[:this.block.BlockSize()])
 	crypted := make([]byte, len(src))
@@ -71,13 +77,18 @@ func (this *ThreeDES) Encrypt(src []byte) (string, error) {
 	return base64.StdEncoding.EncodeToString(crypted), nil
 }
 
-func (this *ThreeDES) Decrypt(src string) ([]byte, error) {
+func (this *ThreeDES) DecryptForce(str string) string {
+	target, _ := this.Decrypt(str)
+	return target
+}
+
+func (this *ThreeDES) Decrypt(src string) (string, error) {
 	s, err := base64.StdEncoding.DecodeString(src)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	blockmode := cipher.NewCBCDecrypter(this.block, this.key[:this.block.BlockSize()])
 	origData := make([]byte, len(s))
 	blockmode.CryptBlocks(origData, s)
-	return unpadding(origData), nil
+	return string(unpadding(origData)), nil
 }
