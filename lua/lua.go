@@ -57,15 +57,13 @@ func (this *LuaPool) Init(max int, lib map[string]lua.LGFunction) {
 	this.max = max
 	this.saved = make([]*lua.LState, 0, max/2)
 	this.exports = lib
-	for _, l := range this.saved {
-		l.PreloadModule("bingo", this.load)
-	}
 }
+
 func (this *LuaPool) load(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), this.exports)
-	L.SetField(mod, "name", lua.LString("bingo"))
 	//设为只读，防止被串改
-	L.Push(SetReadOnly(L, mod))
+	L.SetGlobal("bingo", mod)
+	SetReadOnly(L, mod)
 	return 1
 }
 
