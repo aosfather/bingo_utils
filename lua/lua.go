@@ -38,32 +38,33 @@ func compile(name string, reader io.Reader) (*lua.FunctionProto, error) {
 }
 
 //构建池
-func NewLuaPool(max int, lib map[string]lua.LGFunction) *LuaPool {
+func NewLuaPool(max int, name string, lib map[string]lua.LGFunction) *LuaPool {
 	pool := LuaPool{}
-	pool.Init(max, lib)
+	pool.Init(max, name, lib)
 	return &pool
 }
 
 //lua虚拟机池
 type LuaPool struct {
-	max     int
-	size    int
-	m       sync.Mutex
-	saved   []*lua.LState
-	exports map[string]lua.LGFunction
+	max        int
+	size       int
+	m          sync.Mutex
+	saved      []*lua.LState
+	exportName string
+	exports    map[string]lua.LGFunction
 }
 
-func (this *LuaPool) Init(max int, lib map[string]lua.LGFunction) {
+func (this *LuaPool) Init(max int, name string, lib map[string]lua.LGFunction) {
 	this.max = max
 	this.saved = make([]*lua.LState, 0, max/2)
+	this.exportName = name
 	this.exports = lib
 }
 
 func (this *LuaPool) load(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), this.exports)
 	//设为只读，防止被串改
-	L.SetGlobal("bingo", mod)
-	SetReadOnly(L, mod)
+	L.Push(SetReadOnly(L, mod))
 	return 1
 }
 
@@ -87,7 +88,7 @@ func (this *LuaPool) Get() *lua.LState {
 
 func (this *LuaPool) new() *lua.LState {
 	L := lua.NewState()
-	L.PreloadModule("bingo", this.load)
+	L.PreloadModule(this.exportName, this.load)
 	return L
 }
 
