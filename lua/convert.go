@@ -32,6 +32,22 @@ func NewLuaOption() LuaOption {
 	return opt
 }
 
+func StringArrayToLuaTable(l *lua.LState, dic []string) *lua.LTable {
+	table := l.NewTable()
+	for k, v := range dic {
+		l.SetTable(table, lua.LNumber(k), lua.LString(v))
+	}
+	return table
+
+}
+
+func ArrayToLuaTable(l *lua.LState, dic []interface{}) *lua.LTable {
+	table := l.NewTable()
+	for k, v := range dic {
+		l.SetTable(table, lua.LNumber(k), ToLuaValue(v))
+	}
+	return table
+}
 func ToLuaTable(l *lua.LState, dic map[string]string) *lua.LTable {
 	table := l.NewTable()
 	for k, v := range dic {

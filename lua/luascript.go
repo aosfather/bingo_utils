@@ -8,6 +8,7 @@ import (
 
 var _default_option = NewLuaOption()
 
+type LuaHandle func(*lua.LState)
 type LuaLogFunction func(string)
 type LuaContext map[string]interface{}
 type LuaScript struct {
@@ -40,7 +41,7 @@ func (this *LuaScript) Load(name, content string) {
 	}
 }
 
-func (this *LuaScript) Call() (interface{}, error) {
+func (this *LuaScript) Call(before LuaHandle, after LuaHandle) (interface{}, error) {
 	var l *lua.LState
 	if this.pool != nil {
 		l = this.pool.Get()
@@ -54,7 +55,13 @@ func (this *LuaScript) Call() (interface{}, error) {
 	lfunc := l.NewFunctionFromProto(this.function)
 	l.Push(lfunc)
 	this.initFunctions(l)
+	if before != nil {
+		before(l)
+	}
 	err := l.PCall(0, 1, l.NewFunction(this.errHandle))
+	if after != nil {
+		after(l)
+	}
 	return ToGoValue(l.Get(-1), _default_option), err
 }
 

@@ -8,7 +8,7 @@ import (
 
 func TestLuaScript_Load(t *testing.T) {
 	script := LuaScript{}
-	script.pool = NewLuaPool(10, nil)
+	script.pool = NewLuaPool(10, "", nil)
 	s := `
 
 function name()
