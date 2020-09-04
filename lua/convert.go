@@ -91,6 +91,34 @@ func ToLuaValue(v interface{}) lua.LValue {
 
 	}
 }
+func ToGoStringArray(lv lua.LValue) []string {
+	v := lv.(*lua.LTable)
+	maxn := v.MaxN()
+	if maxn == 0 {
+		return []string{}
+	} else {
+		ret := make([]string, 0, maxn)
+		for i := 1; i <= maxn; i++ {
+			ret = append(ret, v.RawGetInt(i).String())
+		}
+		return ret
+	}
+}
+
+func ToGoMap(lv lua.LValue) map[string]interface{} {
+	v := lv.(*lua.LTable)
+	ret := make(map[string]interface{})
+	maxn := v.MaxN()
+	if maxn == 0 {
+		opt := NewLuaOption()
+		v.ForEach(func(key, value lua.LValue) {
+			ret[key.String()] = ToGoValue(value, opt)
+		})
+	}
+
+	return ret
+
+}
 
 func ToGoValue(lv lua.LValue, opt LuaOption) interface{} {
 	switch v := lv.(type) {
