@@ -19,6 +19,27 @@ type TimeWheel struct {
 	taskRecord     *sync.Map
 }
 
+type Jobhandle interface {
+	TaskName() string
+	Execute()
+}
+
+type SimpleJobHandle struct {
+	Name    string
+	Data    TaskData
+	JobFunc Job
+}
+
+func (this *SimpleJobHandle) TaskName() string {
+	return this.Name
+}
+
+func (this *SimpleJobHandle) Execute() {
+	if this.JobFunc != nil {
+		this.JobFunc(this.Data)
+	}
+}
+
 // Job callback function
 type Job func(TaskData)
 
@@ -35,6 +56,14 @@ type task struct {
 	taskData    TaskData
 	schedule    Schedule
 	lasttrigger *time.Time
+}
+
+func NewSecondWheel(slotNum int) *TimeWheel {
+	return New(time.Second, slotNum)
+}
+
+func NewMinuteWheel(slotNum int) *TimeWheel {
+	return New(time.Minute, slotNum)
 }
 
 // New create a empty time wheel
@@ -82,6 +111,13 @@ func (tw *TimeWheel) start() {
 	}
 }
 
+func (tw *TimeWheel) AddJobByCron(cron string, job Jobhandle) error {
+	if cron == "" || job == nil {
+		return errors.New("illegal task params")
+	}
+	return tw.AddTaskByCron(cron, job.TaskName(), nil, func(t TaskData) { job.Execute() })
+}
+
 func (tw *TimeWheel) AddTaskByCron(cron string, key interface{}, data TaskData, job Job) error {
 	if cron == "" || key == nil || job == nil {
 		return errors.New("illegal task params")
@@ -102,6 +138,33 @@ func (tw *TimeWheel) AddTaskByCron(cron string, key interface{}, data TaskData, 
 	tw.addTaskChannel <- &task{interval: interval, times: 1, key: key, taskData: data, job: job, schedule: s, lasttrigger: &happertime}
 
 	return nil
+}
+
+func (tw *TimeWheel) AddForeverTaskByHours(t int64, key interface{}, data TaskData, job Job) error {
+	return tw.AddTask(time.Duration(t)*time.Hour, -1, key, data, job)
+}
+
+func (tw *TimeWheel) AddForeverTaskByMinutes(t int64, key interface{}, data TaskData, job Job) error {
+	return tw.AddTask(time.Duration(t)*time.Minute, -1, key, data, job)
+}
+
+func (tw *TimeWheel) AddForeverTaskBySeconds(t int64, key interface{}, data TaskData, job Job) error {
+	return tw.AddTask(time.Duration(t)*time.Second, -1, key, data, job)
+}
+
+//
+func (tw *TimeWheel) AddOneTimeSimpleTask(t time.Time, job Job) error {
+	return tw.AddOneTimeTask(t, nil, job)
+}
+
+func (tw *TimeWheel) AddOneTimeTask(t time.Time, data TaskData, job Job) error {
+	now := time.Now()
+	interval := t.Sub(now)
+	return tw.AddTask(interval, 1, &now, data, job)
+}
+
+func (tw *TimeWheel) AddCycleSimpleTask(interval time.Duration, times int, key interface{}, job Job) error {
+	return tw.AddTask(interval, times, key, nil, job)
 }
 
 // AddTask add new task to the time wheel
