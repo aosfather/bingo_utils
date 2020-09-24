@@ -11,6 +11,22 @@ import (
 	"sync"
 )
 
+func SetLuaPath(p ...string) {
+	luapath := "/?.lua"
+	for _, path := range p {
+		luapath = luapath + ";" + path + "/?.lua"
+	}
+	lua.LuaPathDefault = luapath
+}
+
+func AddLuaPath(p ...string) {
+	luapath := lua.LuaPathDefault
+	for _, path := range p {
+		luapath = luapath + ";" + path + "/?.lua"
+	}
+	lua.LuaPathDefault = luapath
+}
+
 func CompileByfile(filename string) (*lua.FunctionProto, error) {
 	file, err := os.Open(filename)
 	defer file.Close()
