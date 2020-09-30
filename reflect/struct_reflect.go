@@ -40,11 +40,14 @@ func IsMap(obj interface{}) bool {
 	if objT.Kind() == reflect.Map {
 		return true
 	}
-	if objT.Kind() == reflect.Ptr && objT.Elem().Kind() == reflect.Map {
-		return true
-	}
 	return false
 }
+
+func IsMapPtr(obj interface{}) bool {
+	objT := reflect.TypeOf(obj)
+	return objT.Kind() == reflect.Ptr && objT.Elem().Kind() == reflect.Map
+}
+
 func HasFieldofStruct(obj interface{}, fieldName string) bool {
 
 	_, rv, err := GetStructTypeValue(obj)
