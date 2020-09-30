@@ -40,6 +40,9 @@ func IsMap(obj interface{}) bool {
 	if objT.Kind() == reflect.Map {
 		return true
 	}
+	if objT.Kind() == reflect.Ptr && objT.Elem().Kind() == reflect.Map {
+		return true
+	}
 	return false
 }
 func HasFieldofStruct(obj interface{}, fieldName string) bool {
@@ -56,6 +59,17 @@ func HasFieldofStruct(obj interface{}, fieldName string) bool {
 	}
 	return false
 }
+func GetRealValue(value interface{}) interface{} {
+	var val interface{}
+	objT := reflect.TypeOf(value)
+	if objT.Kind() == reflect.Ptr {
+		val = reflect.ValueOf(value).Elem().Interface()
+	} else {
+		val = value
+	}
+	return val
+}
+
 func GetRealType(obj interface{}) reflect.Type {
 	objT := reflect.TypeOf(obj)
 	if objT.Kind() == reflect.Ptr {

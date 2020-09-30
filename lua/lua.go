@@ -60,6 +60,12 @@ func NewLuaPool(max int, name string, lib map[string]lua.LGFunction) *LuaPool {
 	return &pool
 }
 
+func NewLuaPool2(max int, name string, lib ...*LuaLib) *LuaPool {
+	pool := LuaPool{}
+	pool.InitByLibs(max, name, lib...)
+	return &pool
+}
+
 type LuaLib struct {
 	ExportName      string
 	ExportFunctions map[string]lua.LGFunction

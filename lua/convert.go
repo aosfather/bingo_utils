@@ -44,7 +44,12 @@ func StringArrayToLuaTable(l *lua.LState, dic []string) *lua.LTable {
 func ArrayToLuaTable(l *lua.LState, dic []interface{}) *lua.LTable {
 	table := l.NewTable()
 	for k, v := range dic {
-		l.SetTable(table, lua.LNumber(k), ToLuaValue(v))
+		if m, ok := v.(map[string]interface{}); ok {
+			l.SetTable(table, lua.LNumber(k), ToLuaTable2(l, m))
+		} else {
+			l.SetTable(table, lua.LNumber(k), ToLuaValue(v))
+		}
+
 	}
 	return table
 }
@@ -66,7 +71,6 @@ func ToLuaTable2(l *lua.LState, dic map[string]interface{}) *lua.LTable {
 
 func GetRealTypeAndValue(obj interface{}) (interface{}, reflect.Type) {
 	objT := reflect.TypeOf(obj)
-
 	if objT.Kind() == reflect.Ptr {
 		v := reflect.ValueOf(obj)
 		return v.Elem().Interface(), objT.Elem()
@@ -86,6 +90,8 @@ func ToLuaValue(v interface{}) lua.LValue {
 		return lua.LBool(rv.(bool))
 	case reflect.String:
 		return lua.LString(rv.(string))
+	case reflect.Slice:
+		return lua.LString(rv.([]byte))
 	default:
 		return lua.LNil
 
