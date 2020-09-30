@@ -82,9 +82,15 @@ func GetRealTypeAndValue(obj interface{}) (interface{}, reflect.Type) {
 func ToLuaValue(v interface{}) lua.LValue {
 	rv, t := GetRealTypeAndValue(v)
 	switch t.Kind() {
-	case reflect.Int, reflect.Int64, reflect.Uint:
+	case reflect.Int:
+		return lua.LNumber(rv.(int))
+	case reflect.Int64:
 		return lua.LNumber(rv.(int64))
-	case reflect.Float32, reflect.Float64:
+	case reflect.Uint:
+		return lua.LNumber(rv.(uint))
+	case reflect.Float32:
+		return lua.LNumber(rv.(float32))
+	case reflect.Float64:
 		return lua.LNumber(rv.(float64))
 	case reflect.Bool:
 		return lua.LBool(rv.(bool))
