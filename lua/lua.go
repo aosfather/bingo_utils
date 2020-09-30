@@ -60,6 +60,18 @@ func NewLuaPool(max int, name string, lib map[string]lua.LGFunction) *LuaPool {
 	return &pool
 }
 
+type LuaLib struct {
+	ExportName      string
+	ExportFunctions map[string]lua.LGFunction
+}
+
+func (this *LuaLib) load(L *lua.LState) int {
+	mod := L.SetFuncs(L.NewTable(), this.ExportFunctions)
+	//设为只读，防止被串改
+	L.Push(SetReadOnly(L, mod))
+	return 1
+}
+
 //lua虚拟机池
 type LuaPool struct {
 	max        int
@@ -68,6 +80,13 @@ type LuaPool struct {
 	saved      []*lua.LState
 	exportName string
 	exports    map[string]lua.LGFunction
+	libs       []*LuaLib
+}
+
+func (this *LuaPool) InitByLibs(max int, name string, lib ...*LuaLib) {
+	this.max = max
+	this.saved = make([]*lua.LState, 0, max/2)
+	this.libs = lib
 }
 
 func (this *LuaPool) Init(max int, name string, lib map[string]lua.LGFunction) {
@@ -104,7 +123,14 @@ func (this *LuaPool) Get() *lua.LState {
 
 func (this *LuaPool) new() *lua.LState {
 	L := lua.NewState()
-	L.PreloadModule(this.exportName, this.load)
+	if this.libs == nil || len(this.libs) == 0 {
+		L.PreloadModule(this.exportName, this.load)
+	} else {
+		for _, lib := range this.libs {
+			L.PreloadModule(lib.ExportName, lib.load)
+		}
+	}
+
 	return L
 }
 
