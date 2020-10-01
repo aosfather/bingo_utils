@@ -62,7 +62,7 @@ func (this *LuaScript) Call(before LuaHandle, after LuaHandle) (interface{}, err
 	if after != nil {
 		after(l)
 	}
-	return ToGoValue(l.Get(-1), _default_option), err
+	return ToGoValue(l.Get(-1), NewLuaDefaultOption()), err
 }
 
 func (this *LuaScript) CallByParame(funcname string, p ...interface{}) (interface{}, error) {
@@ -95,7 +95,7 @@ func (this *LuaScript) CallByParame(funcname string, p ...interface{}) (interfac
 		Protect: true,
 	}, paramters...)
 
-	return ToGoValue(l.Get(-1), _default_option), err
+	return ToGoValue(l.Get(-1), NewLuaDefaultOption()), err
 }
 
 //错误捕获器
