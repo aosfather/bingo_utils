@@ -32,6 +32,10 @@ func NewLuaOption() LuaOption {
 	return opt
 }
 
+func NewLuaDefaultOption() LuaOption {
+	opt := LuaOption{func(s string) string { return s }, false, "bingo"}
+	return opt
+}
 func StringArrayToLuaTable(l *lua.LState, dic []string) *lua.LTable {
 	table := l.NewTable()
 	for k, v := range dic {
@@ -145,7 +149,7 @@ func ToGoValue(lv lua.LValue, opt LuaOption) interface{} {
 	case *lua.LTable:
 		maxn := v.MaxN()
 		if maxn == 0 { // table
-			ret := make(map[interface{}]interface{})
+			ret := make(map[string]interface{})
 			v.ForEach(func(key, value lua.LValue) {
 				keystr := fmt.Sprint(ToGoValue(key, opt))
 				ret[opt.NameFunc(keystr)] = ToGoValue(value, opt)
